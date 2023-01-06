@@ -60,7 +60,6 @@ fn main() {
                     cover_path_converted = String::from("");
                 }
             }
-        }
 
             // Publication date
             let publication_date = doc.mdata("date").unwrap();
