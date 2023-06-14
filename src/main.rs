@@ -90,7 +90,7 @@ fn main() {
             main_string.push_str(&new_json);
         } else {
             eprintln!(
-                "Critical Error: EPUBTOOL: Failed to init ePUB book. It probably is corrupted: {}",
+                "Critical Error: EPUBTOOL: Failed to initialize ePUB book {}. It probably is corrupted.",
                 epub_file
             );
         }
