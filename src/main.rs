@@ -2,8 +2,8 @@ use epub::doc::EpubDoc;
 use std::fs::{self};
 use std::io::Write;
 
-use std::env;
 use sha256::digest_file;
+use std::env;
 use std::path::Path;
 
 fn main() {
@@ -23,9 +23,11 @@ fn main() {
 
     let args_length = args.len();
 
-    let mut main_string = String::from(r#"{
+    let mut main_string = String::from(
+        r#"{
             "database":[
-            "#);
+            "#,
+    );
 
     let thumbnails_path = "/mnt/onboard/onboard/.thumbnails/";
     std::fs::create_dir_all(thumbnails_path).unwrap();
@@ -36,27 +38,25 @@ fn main() {
         count += 1;
         let doc_res = EpubDoc::new(&epub_file);
 
-        if doc_res.is_ok() {
+        if let Ok(mut doc) = doc_res {
             // Title
-            let mut doc = doc_res.unwrap();
             let title = doc.mdata("title").unwrap_or("No title found".to_string());
-
             // Cover
+            // Don't touch this Nicolas, don't add an extension.
             let file_digest = digest_file(&epub_file).unwrap().to_string();
-            let cover_path = main_path.clone() + &file_digest + ".t";
+            let cover_path = main_path.clone() + &file_digest;
             let mut cover_path_converted = main_path.clone() + &file_digest;
             if !Path::new(&cover_path_converted).exists() && extract_cover {
-                let cover_data = doc.get_cover();
-                if cover_data.is_ok() {
+                let cover_data_res = doc.get_cover();
+                if let Ok(cover_data) = cover_data_res {
                     let f = fs::File::create(cover_path.clone());
                     let mut f = f.unwrap();
-                    f.write_all(&cover_data.unwrap()).unwrap();
+                    f.write_all(&cover_data).unwrap();
                     // No explanation to this
                     if !Path::new(&cover_path).exists() {
                         cover_path_converted = String::from("");
                     }
-                }
-                else {
+                } else {
                     cover_path_converted = String::from("");
                 }
             }
@@ -85,12 +85,14 @@ fn main() {
                 .replace("publication_date_replace", &publication_date);
 
             if args_length != count {
-                new_json.push_str(",");
+                new_json.push(',');
             }
             main_string.push_str(&new_json);
-        }
-        else {
-            eprintln!("Critical Error: EPUBTOOL: Failed to init ePUB book. It probably is corrupted: {}", epub_file);
+        } else {
+            eprintln!(
+                "Critical Error: EPUBTOOL: Failed to init ePUB book. It probably is corrupted: {}",
+                epub_file
+            );
         }
     }
     print!("{}", main_string);
