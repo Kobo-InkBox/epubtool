@@ -21,7 +21,7 @@ fn main() {
 
     args.remove(0);
 
-    let args_length = args.len();
+    let mut args_length = args.len();
 
     let mut main_string = String::from(
         r#"{
@@ -40,7 +40,7 @@ fn main() {
 
         if let Ok(mut doc) = doc_res {
             // Title
-            let title = doc.mdata("title").unwrap_or("No title found".to_string());
+            let title = doc.mdata("title").unwrap_or(epub_file.split('/').last().unwrap_or("No title found").replace(".epub", ""));
             // Cover
             // Don't touch this Nicolas, don't add an extension.
             let file_digest = digest_file(&epub_file).unwrap().to_string();
@@ -62,10 +62,10 @@ fn main() {
             }
 
             // Publication date
-            let publication_date = doc.mdata("date").unwrap();
+            let publication_date = doc.mdata("date").unwrap_or(String::from("Unknown"));
 
             // Author
-            let author = doc.mdata("creator").unwrap();
+            let author = doc.mdata("creator").unwrap_or(String::from("Unknown"));
 
             let json = r#"{
                 "BookID": "book_id_replace",
@@ -93,6 +93,9 @@ fn main() {
                 "Critical Error: EPUBTOOL: Failed to initialize ePUB book {}. It probably is corrupted.",
                 epub_file
             );
+            // Well this book won't be added, so don't allow ID to go all over the place
+            count -= 1; 
+            args_length -= 1;
         }
     }
     print!("{}", main_string);
